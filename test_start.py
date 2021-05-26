@@ -70,6 +70,6 @@ def test_check_stickers_lab4(driver):
                                                 Колличество стикеров: {count_stickers}"""
     for elem in duck:
         assert len(elem.find_elements_by_css_selector('[class^="sticker"]')) == 1, \
-            "Для элемента найдено более одного стикера"
+            "Для элемента найдено более одного стикера или не найдено вовсе"
 
 
