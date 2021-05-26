@@ -53,3 +53,23 @@ def test_check_all_parts_lab4(driver):
     driver.find_element_by_css_selector('[title="Logout"]').click()
     driver.find_element_by_css_selector('div [class="content"]')
 
+
+def test_check_stickers_lab4(driver):
+    """
+    Задание 8. Сделайте сценарий, проверяющий наличие стикеров у товаров
+    Сделайте сценарий, проверяющий наличие стикеров у всех товаров в учебном приложении litecart на главной странице.
+    Стикеры -- это полоски в левом верхнем углу изображения товара,
+    на которых написано New или Sale или что-нибудь другое.
+    Сценарий должен проверять, что у каждого товара имеется ровно один стикер.
+    """
+    driver.get("http://localhost/litecart/")
+    duck = driver.find_elements_by_css_selector('[class="listing-wrapper products"] .link')
+    count_stickers = len(driver.find_elements_by_css_selector('[class^="sticker"]'))
+    assert len(duck) == count_stickers, f"""   Колличество товаров не соответствует колличеству стикеров. 
+                                                Колличество товаров: {len(duck)}
+                                                Колличество стикеров: {count_stickers}"""
+    for elem in duck:
+        assert len(elem.find_elements_by_css_selector('[class^="sticker"]')) == 1, \
+            "Для элемента найдено более одного стикера"
+
+
