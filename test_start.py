@@ -137,25 +137,47 @@ def test_check_open_need_product(driver):
     main_sale_cost = elem.find_element_by_css_selector('.campaign-price')
     main_text_old_cost = main_old_cost.text
     main_text_sale_cost = main_sale_cost.text
-    main_color_old_cost = main_old_cost.get_attribute("color")
-    main_color_sale_cost = main_sale_cost.get_attribute("color")
-    main_style_old_cost = ''
-    main_style_sale_cost = ''
-    main_size_old_cost = main_old_cost.size
-    main_size_sale_cost = main_sale_cost.size
-
+    main_color_old_cost = main_old_cost.value_of_css_property("color")
+    main_color_sale_cost = main_sale_cost.value_of_css_property("color")
+    main_style_old_cost = main_old_cost.value_of_css_property("text-decoration-line")
+    main_style_sale_cost = main_sale_cost.value_of_css_property("text-decoration-line")
+    main_size_old_cost = main_old_cost.value_of_css_property("font-size")
+    main_size_sale_cost = main_sale_cost.value_of_css_property("font-size")
+    # Проверка зачеркнутости
+    assert main_style_old_cost != 'none', "Текст должен быть зачеркнут"
+    assert main_style_sale_cost in ['none', ''], "Текст не должен быть зачеркнут"
+    # Проверка цветов
+    assert main_color_old_cost in ['rgba(119, 119, 119, 1)', 'rgb(119, 119, 119)'], f"Цвет обычной цены не соответствует ожидаемому, код цвета: {main_color_old_cost}"
+    assert main_color_sale_cost in ['rgba(204, 0, 0, 1)', 'rgb(204, 0, 0)'], f"Цвет акционной цены не соответствует ожидаемому, код цвета: {main_color_sale_cost}"
+    # Проверка, что акционная цена крупнее, чем обычная
+    assert main_size_old_cost < main_size_sale_cost, "Ожидается, что по размеру обычная цена меньше акционной"
     driver.find_element_by_css_selector('[id="box-campaigns"] [title="Yellow Duck"]:first-child').click()
-    detail_text = ''
-    detail_cost = ''
-    detail_color_old_cost = ''
-    detail_color_sale_cost = ''
-    detail_style_old_cost = ''
-    detail_style_sale_cost = ''
-    detail_size_old_cost = ''
-    detail_size_sale_cost = ''
+    detail_text = driver.find_element_by_css_selector("#box-product .title").text
+    detail_old_cost = driver.find_element_by_css_selector('.regular-price')
+    detail_sale_cost = driver.find_element_by_css_selector('.campaign-price')
+    detail_text_old_cost = detail_old_cost.text
+    detail_text_sale_cost = detail_sale_cost.text
+    detail_color_old_cost = detail_old_cost.value_of_css_property("color")
+    detail_color_sale_cost = detail_sale_cost.value_of_css_property("color")
+    detail_style_old_cost = detail_old_cost.value_of_css_property("text-decoration-line")
+    detail_style_sale_cost = detail_sale_cost.value_of_css_property("text-decoration-line")
+    detail_size_old_cost = detail_old_cost.value_of_css_property("font-size")
+    detail_size_sale_cost = detail_sale_cost.value_of_css_property("font-size")
+    # Проверка зачеркнутости
+    assert detail_style_old_cost != 'none', "Текст должен быть зачеркнут"
+    assert detail_style_sale_cost in ['none', ''], "Текст не должен быть зачеркнут"
+    # Проверка цветов
+    assert detail_color_old_cost in ['rgba(102, 102, 102, 1)', 'rgb(102, 102, 102)'], f"Цвет обычной цены не соответствует ожидаемому, код цвета: {detail_color_old_cost}"
+    assert detail_color_sale_cost in ['rgba(204, 0, 0, 1)', 'rgb(204, 0, 0)'], f"Цвет акционной цены не соответствует ожидаемому, код цвета: {detail_color_sale_cost}"
+    # Проверка, что акционная цена крупнее, чем обычная
+    assert detail_size_old_cost < detail_size_sale_cost, "Ожидается, что по размеру обычная цена меньше акционной"
+    # Првоерки на соответствие данных между формами
+    assert main_text == detail_text, "Название товара на основной странице и в деталях - отличается"
+    assert main_text_old_cost == detail_text_old_cost, "Обычная цена товара на основной странице и в деталях - отличается"
+    assert main_text_sale_cost == detail_text_sale_cost, "Акционная цена товара на основной странице и в деталях - отличается"
 
 
-def test_check_open_need_product(driver):
+def test_registration(driver):
     """
     Задание 11. Сделайте сценарий регистрации пользователя
     Сделайте сценарий для регистрации нового пользователя в учебном приложении litecart (не в админке, а в клиентской части магазина).
@@ -172,7 +194,7 @@ def test_check_open_need_product(driver):
     В форме регистрации есть капча, её нужно отключить в админке учебного приложения на вкладке Settings -> Security."""
 
 
-def test_check_open_need_product(driver):
+def test_add_product(driver):
     """
     Задание 12. Сделайте сценарий добавления товара
     Сделайте сценарий для добавления нового товара (продукта) в учебном приложении litecart (в админке).
