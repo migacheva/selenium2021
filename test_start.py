@@ -1,10 +1,12 @@
+import os
 import time
 from datetime import datetime
-
+import random
 import pytest
 from selenium import webdriver
+from selenium.webdriver import ActionChains
 
-from helpers import login_admin, fill_in_the_field
+from helpers import login_admin, fill_simple
 
 
 @pytest.fixture
@@ -194,23 +196,23 @@ def test_registration(driver):
     email = 'Kokoko_' + str(datetime.now().strftime("%Y/%m/%d@%H%M%S.qq"))
     pasw = 'qwerty'
     driver.get("http://localhost/litecart/en/create_account")
-    fill_in_the_field(driver, locator='[name="firstname"]', text="Anna")
-    fill_in_the_field(driver, locator='[name="lastname"]', text="Kovalchuk")
-    fill_in_the_field(driver, locator='[name="address1"]', text="address1")
-    fill_in_the_field(driver, locator='[name="postcode"]', text="12345")
-    fill_in_the_field(driver, locator='[name="city"]', text="Vladimir")
+    fill_simple(driver, locator='[name="firstname"]', text="Anna")
+    fill_simple(driver, locator='[name="lastname"]', text="Kovalchuk")
+    fill_simple(driver, locator='[name="address1"]', text="address1")
+    fill_simple(driver, locator='[name="postcode"]', text="12345")
+    fill_simple(driver, locator='[name="city"]', text="Vladimir")
     driver.find_element_by_css_selector('[class="select2-selection__arrow"]').click()
-    fill_in_the_field(driver, '[type="search"]', "united state")
+    fill_simple(driver, '[type="search"]', "united state")
     driver.find_element_by_css_selector('[class="select2-results"] li:first-child').click()
-    fill_in_the_field(driver, locator='[name="email"]', text=email)
-    fill_in_the_field(driver, locator='[name="phone"]', text="+71112223344")
-    fill_in_the_field(driver, locator='[name="password"]', text=pasw)
-    fill_in_the_field(driver, locator='[name="confirmed_password"]', text=pasw)
+    fill_simple(driver, locator='[name="email"]', text=email)
+    fill_simple(driver, locator='[name="phone"]', text="+71112223344")
+    fill_simple(driver, locator='[name="password"]', text=pasw)
+    fill_simple(driver, locator='[name="confirmed_password"]', text=pasw)
     driver.find_element_by_css_selector('[name="create_account"]').click()
     time.sleep(1)
     driver.find_element_by_css_selector('#box-account li:last-child a').click()
-    fill_in_the_field(driver, locator='[name="email"]', text=email)
-    fill_in_the_field(driver, locator='[name="password"]', text=pasw)
+    fill_simple(driver, locator='[name="email"]', text=email)
+    fill_simple(driver, locator='[name="password"]', text=pasw)
     driver.find_element_by_css_selector('[value="Login"]').click()
     driver.find_element_by_css_selector('#box-account li:last-child a').click()
 
@@ -230,5 +232,43 @@ def test_add_product(driver):
     Надо средствами языка программирования преобразовать относительный путь в абсолютный.
     После сохранения товара нужно убедиться, что он появился в каталоге (в админке).
     Клиентскую часть магазина можно не проверять.
-    Можно оформить сценарий либо как тест, либо как отдельный исполняемый файл.
     """
+    login_admin(driver)
+    driver.find_element_by_css_selector('#app-:nth-child(2) a').click()
+    # general
+    driver.find_element_by_css_selector('#content .button:nth-child(2)').click()
+    time.sleep(1)
+    name = f"Котик {datetime.now().strftime('%H:%M:%S')}"
+    fill_simple(driver, locator='[name="name[en]"]', text=name)
+    fill_simple(driver, locator='[name="code"]', text="CAT")
+    driver.find_element_by_css_selector('[name="status"][value="1"]').click()
+    rand_cat = random.choice(['cat1', 'cat2', 'cat3', 'cat0'])
+    driver.find_element_by_css_selector('[name="new_images[]"]').send_keys(os.getcwd() + f"\\img\\{rand_cat}.jpg")
+    # Information
+    driver.find_element_by_css_selector("#content  li:nth-child(2) > a").click()
+    time.sleep(1)
+    driver.find_element_by_css_selector('[name="manufacturer_id"]').click()
+    driver.find_element_by_css_selector('[name="manufacturer_id"] [value="1"]').click()
+    fill_simple(driver, locator='[name="keywords"]', text="Котики")
+    fill_simple(driver, locator='[name="short_description[en]"]', text="Сладенький пирожок")
+    fill_simple(driver, locator='[class="trumbowyg-editor"]', text="Самый прекрасный и сладенький пирожочек")
+    fill_simple(driver, locator='[name="head_title[en]"]', text="Котечек")
+    fill_simple(driver, locator='[name="meta_description[en]"]', text="Китка")
+    # price
+    driver.find_element_by_css_selector("#content  li:nth-child(4) > a").click()
+    time.sleep(1)
+    fill_simple(driver, locator='[name="purchase_price"]', text="150")
+    driver.find_element_by_css_selector('[name="purchase_price_currency_code"]').click()
+    driver.find_element_by_css_selector('[name="purchase_price_currency_code"] [value="USD"]').click()
+    fill_simple(driver, locator='[name="prices[USD]"]', text="222")
+    fill_simple(driver, locator='[name="prices[EUR]"]', text="333")
+    # сохранить изменения
+    driver.find_element_by_css_selector('[name="save"]').click()
+    # проверить что товар добавлен
+    time.sleep(3)
+    count = len(driver.find_elements_by_css_selector('.dataTable td:nth-child(3)'))
+    list_result = []
+    for i in range(2, count + 2):
+        content = driver.find_element_by_css_selector(f'.dataTable tr:nth-child({i}) > td:nth-child(3)').get_attribute("textContent")
+        list_result.append(content)
+    assert ' ' + name in list_result, f"Продукт не был добавлен. Содержание: {list_result}"
