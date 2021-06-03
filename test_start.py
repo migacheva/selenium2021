@@ -1,11 +1,10 @@
 import time
+from datetime import datetime
 
 import pytest
 from selenium import webdriver
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 
-from helpers import login_admin
+from helpers import login_admin, fill_in_the_field
 
 
 @pytest.fixture
@@ -192,6 +191,28 @@ def test_registration(driver):
     Проверки можно никакие не делать, только действия -- заполнение полей, нажатия на кнопки и ссылки.
     Если сценарий дошёл до конца, то есть созданный пользователь смог выполнить вход и выход -- значит создание прошло успешно.
     В форме регистрации есть капча, её нужно отключить в админке учебного приложения на вкладке Settings -> Security."""
+    email = 'Kokoko_' + str(datetime.now().strftime("%Y/%m/%d@%H%M%S.qq"))
+    pasw = 'qwerty'
+    driver.get("http://localhost/litecart/en/create_account")
+    fill_in_the_field(driver, locator='[name="firstname"]', text="Anna")
+    fill_in_the_field(driver, locator='[name="lastname"]', text="Kovalchuk")
+    fill_in_the_field(driver, locator='[name="address1"]', text="address1")
+    fill_in_the_field(driver, locator='[name="postcode"]', text="12345")
+    fill_in_the_field(driver, locator='[name="city"]', text="Vladimir")
+    driver.find_element_by_css_selector('[class="select2-selection__arrow"]').click()
+    fill_in_the_field(driver, '[type="search"]', "united state")
+    driver.find_element_by_css_selector('[class="select2-results"] li:first-child').click()
+    fill_in_the_field(driver, locator='[name="email"]', text=email)
+    fill_in_the_field(driver, locator='[name="phone"]', text="+71112223344")
+    fill_in_the_field(driver, locator='[name="password"]', text=pasw)
+    fill_in_the_field(driver, locator='[name="confirmed_password"]', text=pasw)
+    driver.find_element_by_css_selector('[name="create_account"]').click()
+    time.sleep(1)
+    driver.find_element_by_css_selector('#box-account li:last-child a').click()
+    fill_in_the_field(driver, locator='[name="email"]', text=email)
+    fill_in_the_field(driver, locator='[name="password"]', text=pasw)
+    driver.find_element_by_css_selector('[value="Login"]').click()
+    driver.find_element_by_css_selector('#box-account li:last-child a').click()
 
 
 def test_add_product(driver):
