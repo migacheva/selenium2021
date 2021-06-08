@@ -6,7 +6,7 @@ import pytest
 from selenium import webdriver
 from selenium.webdriver import ActionChains
 
-from helpers import login_admin, fill_simple
+from helpers import login_admin, fill_simple, splitter_rgb
 
 
 @pytest.fixture
@@ -148,8 +148,12 @@ def test_check_open_need_product(driver):
     assert main_style_old_cost != 'none', "Текст должен быть зачеркнут"
     assert main_style_sale_cost in ['none', ''], "Текст не должен быть зачеркнут"
     # Проверка цветов
-    assert main_color_old_cost in ['rgba(119, 119, 119, 1)', 'rgb(119, 119, 119)'], f"Цвет обычной цены не соответствует ожидаемому, код цвета: {main_color_old_cost}"
-    assert main_color_sale_cost in ['rgba(204, 0, 0, 1)', 'rgb(204, 0, 0)'], f"Цвет акционной цены не соответствует ожидаемому, код цвета: {main_color_sale_cost}"
+    rgba_main_color_old_cost = splitter_rgb(main_color_old_cost)
+    rgba_main_color_sale_cost = splitter_rgb(main_color_sale_cost)
+    assert rgba_main_color_old_cost[0] == rgba_main_color_old_cost[1] == rgba_main_color_old_cost[2], \
+        f"Цвет обычной цены не соответствует ожидаемому, код цвета: {main_color_old_cost}"
+    assert rgba_main_color_sale_cost[1] == rgba_main_color_sale_cost[2], \
+        f"Цвет акционной цены не соответствует ожидаемому, код цвета: {main_color_sale_cost}"
     # Проверка, что акционная цена крупнее, чем обычная
     assert main_size_old_cost < main_size_sale_cost, "Ожидается, что по размеру обычная цена меньше акционной"
     driver.find_element_by_css_selector('[id="box-campaigns"] [title="Yellow Duck"]:first-child').click()
@@ -168,14 +172,20 @@ def test_check_open_need_product(driver):
     assert detail_style_old_cost != 'none', "Текст должен быть зачеркнут"
     assert detail_style_sale_cost in ['none', ''], "Текст не должен быть зачеркнут"
     # Проверка цветов
-    assert detail_color_old_cost in ['rgba(102, 102, 102, 1)', 'rgb(102, 102, 102)'], f"Цвет обычной цены не соответствует ожидаемому, код цвета: {detail_color_old_cost}"
-    assert detail_color_sale_cost in ['rgba(204, 0, 0, 1)', 'rgb(204, 0, 0)'], f"Цвет акционной цены не соответствует ожидаемому, код цвета: {detail_color_sale_cost}"
+    rgba_detail_color_old_cost = splitter_rgb(detail_color_old_cost)
+    rgba_detail_color_sale_cost = splitter_rgb(detail_color_sale_cost)
+    assert rgba_detail_color_old_cost[0] == rgba_detail_color_old_cost[1] == rgba_detail_color_old_cost[2], \
+        f"Цвет обычной цены не соответствует ожидаемому, код цвета: {main_color_old_cost}"
+    assert rgba_detail_color_sale_cost[1] == rgba_detail_color_sale_cost[2], \
+        f"Цвет акционной цены не соответствует ожидаемому, код цвета: {main_color_sale_cost}"
     # Проверка, что акционная цена крупнее, чем обычная
     assert detail_size_old_cost < detail_size_sale_cost, "Ожидается, что по размеру обычная цена меньше акционной"
     # Првоерки на соответствие данных между формами
     assert main_text == detail_text, "Название товара на основной странице и в деталях - отличается"
-    assert main_text_old_cost == detail_text_old_cost, "Обычная цена товара на основной странице и в деталях - отличается"
-    assert main_text_sale_cost == detail_text_sale_cost, "Акционная цена товара на основной странице и в деталях - отличается"
+    assert main_text_old_cost == detail_text_old_cost, \
+        "Обычная цена товара на основной странице и в деталях - отличается"
+    assert main_text_sale_cost == detail_text_sale_cost, \
+        "Акционная цена товара на основной странице и в деталях - отличается"
 
 
 def test_registration(driver):
