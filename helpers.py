@@ -37,3 +37,8 @@ def poof(driver, element, w_time=10):
 def waiter_smart(driver, locator, text, w_time=20):
     wait = WebDriverWait(driver, w_time)
     wait.until(EC.text_to_be_present_in_element((By.CSS_SELECTOR, locator), text))
+
+
+def waiter_window(driver, handles, w_time=10):
+    wait = WebDriverWait(driver, w_time)
+    wait.until(EC.new_window_is_opened(handles))

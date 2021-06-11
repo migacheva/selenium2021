@@ -6,7 +6,7 @@ import pytest
 from selenium import webdriver
 from selenium.webdriver import ActionChains
 
-from helpers import login_admin, fill_simple, splitter_rgb, waiter, waiter_smart, poof
+from helpers import login_admin, fill_simple, splitter_rgb, waiter, waiter_smart, poof, waiter_window
 
 
 @pytest.fixture
@@ -329,3 +329,37 @@ def test_buy(driver):
         assert cost_before != cost_after, "Сумма заказа не изменилась"
         # print(_, "cost_before", cost_before, "cost_after", cost_after)
     driver.find_element_by_css_selector('#box-checkout-cart li:nth-child(1) [value="Remove"]').click()
+
+
+def test_check_links(driver):
+    """
+    Задание 14. Проверьте, что ссылки открываются в новом окне
+    Сделайте сценарий, который проверяет, что ссылки на странице редактирования страны открываются в новом окне.
+    Сценарий должен состоять из следующих частей:
+        1) зайти в админку
+        2) открыть пункт меню Countries (или страницу http://localhost/litecart/admin/?app=countries&doc=countries)
+        3) открыть на редактирование какую-нибудь страну или начать создание новой
+        4) возле некоторых полей есть ссылки с иконкой в виде квадратика со стрелкой
+            -- они ведут на внешние страницы и открываются в новом окне, именно это и нужно проверить.
+    Конечно, можно просто убедиться в том, что у ссылки есть атрибут target="_blank".
+    Но в этом упражнении требуется именно кликнуть по ссылке, чтобы она открылась в новом окне,
+    потом переключиться в новое окно, закрыть его, вернуться обратно, и повторить эти действия для всех таких ссылок.
+    Не забудьте, что новое окно открывается не мгновенно, поэтому требуется ожидание открытия окна."""
+    login_admin(driver)
+    driver.get("http://localhost/litecart/admin/?app=countries&doc=countries")
+    driver.find_element_by_css_selector("#content > div > a").click()
+    for i in [2, 3, 6, 7, 8, 9, 10]:
+        current_handle1 = driver.current_window_handle
+        handles = driver.window_handles
+        driver.find_element_by_css_selector(f'form tr:nth-child({i}) i').click()
+        waiter_window(driver, handles)
+        assert len(driver.window_handles) == 2, f"Новая вкладка не открыта, {driver.window_handles}"
+        # переключиться на новую вкладку
+        current_handle2 = driver.window_handles[1]
+        # для тестирования, что вкладки открываются на самом деле
+        time.sleep(1)
+        driver.switch_to_window(current_handle2)
+        driver.close()
+        driver.switch_to_window(current_handle1)
+        assert len(driver.window_handles) == 1, f"Новая вкладка не закрыта, {driver.window_handles}"
+
