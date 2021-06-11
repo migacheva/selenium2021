@@ -6,7 +6,7 @@ import pytest
 from selenium import webdriver
 from selenium.webdriver import ActionChains
 
-from helpers import login_admin, fill_simple, splitter_rgb
+from helpers import login_admin, fill_simple, splitter_rgb, waiter, waiter_smart, poof
 
 
 @pytest.fixture
@@ -282,3 +282,50 @@ def test_add_product(driver):
         content = driver.find_element_by_css_selector(f'.dataTable tr:nth-child({i}) > td:nth-child(3)').get_attribute("textContent")
         list_result.append(content)
     assert ' ' + name in list_result, f"Продукт не был добавлен. Содержание: {list_result}"
+
+
+def test_buy(driver):
+    """
+    Задание 13. Сделайте сценарий работы с корзиной
+    Сделайте сценарий для добавления товаров в корзину и удаления товаров из корзины.
+
+    1) открыть главную страницу
+    2) открыть первый товар из списка
+    2) добавить его в корзину (при этом может случайно добавиться товар, который там уже есть, ничего страшного)
+    3) подождать, пока счётчик товаров в корзине обновится
+    4) вернуться на главную страницу, повторить предыдущие шаги ещё два раза, чтобы в общей сложности в корзине было 3 единицы товара
+    5) открыть корзину (в правом верхнем углу кликнуть по ссылке Checkout)
+    6) удалить все товары из корзины один за другим, после каждого удаления подождать, пока внизу обновится таблица"""
+    for i in [1, 2, 3, 4]:
+        driver.get("http://localhost/litecart/")
+        driver.find_element_by_css_selector("#box-most-popular li:first-child > a.link").click()
+        # Ожидаем что выполнен переход к деталям продукта
+        waiter(driver, locator="#box-product .title")
+        do = driver.find_element_by_css_selector("span.quantity").text
+        if driver.find_element_by_css_selector("#box-product .title").text == 'Yellow Duck':
+            driver.find_element_by_css_selector('[name="options[Size]"]').click()
+            driver.find_element_by_css_selector('[value="Small"]').click()
+        driver.find_element_by_css_selector('[name="add_cart_product"]').click()
+        # Дождаться что обновился счетчик в корзине
+        waiter_smart(driver, locator="span.quantity", text=str(i))
+        posle = driver.find_element_by_css_selector("span.quantity").text
+        assert do != posle, "Колличество элементов в корзине не изменилось"
+        # print("итерация:", i, "до:", do, "после:", posle)
+    assert '4' == driver.find_element_by_css_selector("span.quantity").text, "Что-то не успело добавиться"
+    driver.find_element_by_css_selector("#cart > a.link").click()
+    count = len(driver.find_elements_by_css_selector('#box-checkout-cart > ul > li'))
+    for _ in range(1, count):
+        waiter(driver, locator='#order_confirmation-wrapper tr.footer > td:nth-child(2)')
+        # Дожидаемся что корзина открыта - запоминаем сумму заказа (максимальная на данном этапе)
+        table_cost = driver.find_element_by_css_selector('#order_confirmation-wrapper tr.footer > td:nth-child(2)')
+        cost_before = table_cost.text
+        # Клик по первому элементу + клик удаление (вейтер не всегда срабатывает, надежнее работает time.sleep(1))
+        waiter(driver, locator='#box-checkout-cart li:nth-child(1) > a')
+        driver.find_element_by_css_selector('#box-checkout-cart li:nth-child(1) > a').click()
+        driver.find_element_by_css_selector('#box-checkout-cart li:nth-child(1) [value="Remove"]').click()
+        # Дожидаемся что изменилась сумма заказа
+        poof(driver, table_cost)
+        cost_after = driver.find_element_by_css_selector('#order_confirmation-wrapper tr.footer > td:nth-child(2)').text
+        assert cost_before != cost_after, "Сумма заказа не изменилась"
+        # print(_, "cost_before", cost_before, "cost_after", cost_after)
+    driver.find_element_by_css_selector('#box-checkout-cart li:nth-child(1) [value="Remove"]').click()
