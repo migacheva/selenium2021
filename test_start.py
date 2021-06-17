@@ -6,7 +6,7 @@ import pytest
 from selenium import webdriver
 from selenium.webdriver import ActionChains
 
-from helpers import login_admin, fill_simple, splitter_rgb, waiter, waiter_smart, poof, waiter_window
+from helpers import login_admin, fill_simple, splitter_rgb, waiter, waiter_smart, poof, waiter_window, check_logs
 
 
 @pytest.fixture
@@ -400,3 +400,21 @@ https://www.owasp.org/index.php/OWASP_Zed_Attack_Proxy_Project (Windows, LInux, 
 
 Инициализируйте драйвер так, чтобы запросы из браузера отправлялись через этот прокси-сервер, убедитесь, что они там видны.
 """
+
+
+@pytest.mark.parametrize("id_block", [5, 6, 7, 8, 9])
+def test_check_log(driver, id_block):
+    """
+    Задание 17. Проверьте отсутствие сообщений в логе браузера
+    Сделайте сценарий, который проверяет, не появляются ли в логе браузера
+    сообщения при открытии страниц в учебном приложении,
+    а именно -- страниц товаров в каталоге в административной панели.
+    Сценарий должен состоять из следующих частей:
+        1) зайти в админку
+        2) открыть каталог, категорию, которая содержит товары (страница http://localhost/litecart/admin/?app=catalog&doc=catalog&category_id=1)
+        3) последовательно открывать страницы товаров и проверять, не появляются ли в логе браузера сообщения (любого уровня)
+    """
+    login_admin(driver)
+    driver.get("http://localhost/litecart/admin/?app=catalog&doc=catalog&category_id=1")
+    driver.find_element_by_css_selector(f"#content tr:nth-child({id_block}) > td:nth-child(3) > a").click()
+    check_logs(driver)

@@ -42,3 +42,11 @@ def waiter_smart(driver, locator, text, w_time=20):
 def waiter_window(driver, handles, w_time=10):
     wait = WebDriverWait(driver, w_time)
     wait.until(EC.new_window_is_opened(handles))
+
+
+def check_logs(driver):
+    # проверить в логе браузера сообщения (любого уровня)
+    # страница с ошибками в логах driver.get("https://ru.wiktionary.org/wiki/%D1%81%D1%82%D0%B0%D1%80%D1%8C%D1%91")
+    for log in driver.get_log("browser"):
+        # print(log)
+        assert log is None, f"Уровень: {log['level']}\n Ошибка: {log['message']}"
