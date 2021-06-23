@@ -4,9 +4,9 @@ from datetime import datetime
 import random
 import pytest
 from selenium import webdriver
-from selenium.webdriver import ActionChains
 
-from helpers import login_admin, fill_simple, splitter_rgb, waiter, waiter_smart, poof, waiter_window, check_logs
+from helpers.main_helper import login_admin, splitter_rgb, fill_simple, waiter, poof, waiter_smart, waiter_window, \
+    check_logs
 
 
 @pytest.fixture
